@@ -490,7 +490,7 @@ void exec_image(char *image, char *params, size_t paramsize)
 
 	/* Minix. */
 	reboot_code= minix(process[KERNEL].entry, process[KERNEL].cs,
-				process[KERNEL].ds, params, paramsize);
+				process[KERNEL].ds, params, paramsize);	/// minix see boothead.s:724
 
 	/* Boot file system still around? */
 	fsok= r_super() != 0;

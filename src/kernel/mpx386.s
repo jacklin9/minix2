@@ -207,7 +207,7 @@ copygdt:
 	push	MON_CS_SELECTOR
 	push	DS_SELECTOR
 	push	CS_SELECTOR
-	call	_cstart		! cstart(cs, ds, mcs, mds, parmoff, parmlen)
+	call	_cstart		! cstart(cs, ds, mcs, mds, parmoff, parmlen)	/// cstart see start.c:25
 	add	esp, 6*4
 
 ! Reload gdtr, idtr and the segment registers to global descriptor table set
@@ -229,7 +229,7 @@ csinit:
 	push	0			! set flags to known good state
 	popf				! esp, clear nested task and int enable
 
-	jmp	_main			! main()
+	jmp	_main			! main()	/// main see main.c:22
 
 
 !*===========================================================================*
