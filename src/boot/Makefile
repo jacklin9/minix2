@@ -1,5 +1,28 @@
 # Makefile for the boot monitor package.
 #
+
+/// bootblock is the code that will written to boot block of a disk. Here boot block
+/// is sector 0 for floppy disk, or first block of a primary partition in hard drive.
+
+/// masterboot is the code that will written to sector 0 of a hard drive. It contains 
+/// a partition table.
+
+/// extboot is the code that will written to sector 0 of a extended partition
+
+/// The boot process is as follows:
+/// 1. For floppy: bios loads bootblock from sector 0, and jumps to it. bootblock loads boot
+///		according to sector map. boot loads image
+/// 2. For hard disk with no extended partition: bios loads masterboot from sector 0, and jumps to it. 
+///		masterboot loads bootblock from sector 0 of active partition. bootblock loads boot according
+///		to sector map. boot loads image
+/// 3. For hard disk with extended partition: bios loads masterboot from sector 0, and jumps to it. 
+///		masterboot loads extboot from sector 0 of extended partition. extboot loads bootblock. bootblock
+///		loads boot. boot loads image
+
+/// boot consists of boothead.s, boot.c, bootimage.c, and rawfs86.c
+
+/// edparams is a utility to edit boot parameters
+
 CC=	exec cc
 CC86=	exec cc -mi86 -Was-ncc
 

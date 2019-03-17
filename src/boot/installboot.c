@@ -539,7 +539,7 @@ void make_bootable(enum howto how, char *device, char *bootblock,
 		if (bap->count == 0) bap->address= addr;
 
 		/* Paste sectors together in a multisector read. */
-		if (bap->address + bap->count == addr)
+		if (bap->address + bap->count == addr)	/// The sectors are continous
 			bap->count++;
 		else {
 			/* New address. */
@@ -806,10 +806,10 @@ int main(int argc, char **argv)
 	if (argc == 3 && isoption(argv[1], "-extract")) {
 		extract_image(argv[2]);
 	} else
-	if (argc >= 5 && isoption(argv[1], "-device")) {
+	if (argc >= 5 && isoption(argv[1], "-device")) {	/// Write image to supported file system
 		make_bootable(FS, argv[2], argv[3], argv[4], argv + 5);
 	} else
-	if (argc >= 6 && isoption(argv[1], "-boot")) {
+	if (argc >= 6 && isoption(argv[1], "-boot")) {	/// Unrecognized file system
 		make_bootable(BOOT, argv[2], argv[3], argv[4], argv + 5);
 	} else
 	if (argc == 4 && isoption(argv[1], "-master")) {

@@ -55,14 +55,15 @@ begtext:
 ! bootblock will jump to address 0x10030 in both cases, calling one of the
 ! two jmpf instructions below.
 
-	jmpf	boot, LOADSEG+3	! Set cs right (skipping long a.out header)
+	jmpf	boot, LOADSEG+3	! Set cs right (skipping long a.out header)	/// Executed by long form
 	.space	11		! jmpf + 11 = 16 bytes
-	jmpf	boot, LOADSEG+2	! Set cs right (skipping short a.out header)
+	jmpf	boot, LOADSEG+2	! Set cs right (skipping short a.out header)	/// Executed by short form
 boot:
 	mov	ax, #LOADSEG
 	mov	ds, ax		! ds = header
 
-	movb	al, a_flags
+	movb	al, a_flags	/// Since data segment is set at the beginning of exec header, so a_flags, a_text,
+						/// a_data, a_total all point to right places and have right values
 	testb	al, #A_SEP	! Separate I&D?
 	jnz	sepID
 comID:	xor	ax, ax

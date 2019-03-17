@@ -73,8 +73,7 @@ off_t r_super(void)
 		nr_indirects= V2_INDIRECTS;
 		inodes_per_block= V2_INODES_PER_BLOCK;
 		return (off_t) super.s_zones << zone_shift;
-	} else
-	if (super.s_magic == SUPER_MAGIC) {
+	} else if (super.s_magic == SUPER_MAGIC) {
 		nr_dzones= V1_NR_DZONES;
 		nr_indirects= V1_INDIRECTS;
 		inodes_per_block= V1_INODES_PER_BLOCK;
