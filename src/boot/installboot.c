@@ -447,7 +447,7 @@ void make_bootable(enum howto how, char *device, char *bootblock,
 	if ((rawfd= open(rawdev= device, O_RDWR)) < 0) fatal(device);
 
 	/* Read and check the superblock. */
-	fssize= r_super();
+	fssize= r_super();	/// Get file system size in block
 
 	switch (how) {
 	case FS:
@@ -527,8 +527,7 @@ void make_bootable(enum howto how, char *device, char *bootblock,
 	for (sector= 0; sector < max_sector; sector++) {
 		if (ino == 0) {
 			addr= fssize + (sector / RATIO);
-		} else
-		if ((addr= r_vir2abs(sector / RATIO)) == 0) {
+		} else if ((addr= r_vir2abs(sector / RATIO)) == 0) {
 			fprintf(stderr, "installboot: %s has holes!\n",
 								bootcode);
 			exit(1);
@@ -607,7 +606,7 @@ void make_bootable(enum howto how, char *device, char *bootblock,
 	}
 
 	/* Offset to the end of the file system to add boot code and images. */
-	pos= fssize * RATIO;
+	pos= fssize * RATIO;	/// RATIO is the number of sectors per file system block
 
 	if (ino == 0) {
 		/* Place the boot code onto the boot device. */
@@ -634,7 +633,7 @@ void make_bootable(enum howto how, char *device, char *bootblock,
 	while ((labels= *imagev++) != nil) {
 		/* Place each kernel image on the boot device. */
 
-		if ((image= strchr(labels, ':')) != nil)
+		if ((image= strchr(labels, ':')) != nil)	/// Text before colon are labels
 			*image++= 0;
 		else {
 			if (nolabel) {
@@ -806,10 +805,10 @@ int main(int argc, char **argv)
 	if (argc == 3 && isoption(argv[1], "-extract")) {
 		extract_image(argv[2]);
 	} else
-	if (argc >= 5 && isoption(argv[1], "-device")) {	/// Write image to supported file system
+	if (argc >= 5 && isoption(argv[1], "-device")) {	/// Write image beyond file system
 		make_bootable(FS, argv[2], argv[3], argv[4], argv + 5);
 	} else
-	if (argc >= 6 && isoption(argv[1], "-boot")) {	/// Unrecognized file system
+	if (argc >= 6 && isoption(argv[1], "-boot")) {	/// Write image to disk
 		make_bootable(BOOT, argv[2], argv[3], argv[4], argv + 5);
 	} else
 	if (argc == 4 && isoption(argv[1], "-master")) {
