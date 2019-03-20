@@ -369,7 +369,7 @@ void migrate(void)
  */
 {
 	u32_t oldaddr= caddr;
-	u32_t memsize= get_memsize() * 1024L;
+	u32_t memsize= get_memsize() * 1024L;	/// get_memsize see boothead.s:675
 	u32_t newaddr= memsize - runsize;
 #if !DOS
 	u32_t dma64k= (memsize - 1) & ~0xFFFFL;
@@ -396,7 +396,7 @@ void migrate(void)
 	caddr= newaddr;
 
 	/* Copy code and data. */
-	raw_copy(newaddr, oldaddr, runsize);
+	raw_copy(newaddr, oldaddr, runsize);	/// raw_copy see boothead.s:211
 
 	relocate();	/* Make the copy running. */
 
@@ -1473,7 +1473,7 @@ void boot(void)
 	/* Print greeting message.  The copyright message is not yet displayed,
 	 * because this boot program need not necessarily start Minix.
 	 */
-	reset_video(get_video() & 1 ? COLOR_MODE : MONO_MODE);
+	reset_video(get_video() & 1 ? COLOR_MODE : MONO_MODE);	/// get_video see boothead.s:632. reset_video see boothead.s:549
 
 	printf("\nMinix boot monitor %s\n", version);
 	printf("\nPress ESC to enter the monitor\n");

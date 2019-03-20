@@ -138,7 +138,7 @@ sepID:
 	mov	_runsize+2, dx	! 32 bit size of this process
 
 ! Time to switch to a higher level language (not much higher)
-	call	_boot
+	call	_boot	/// _boot see boot.c:1470
 
 .define	_exit, __exit, ___exit		! Make various compilers happy
 _exit:

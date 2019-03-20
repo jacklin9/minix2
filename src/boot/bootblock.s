@@ -185,7 +185,7 @@ done:
 !
 	pop	si		! Restore es:si = partition table entry
 	pop	es		! dl is still loaded
-	jmpf	BOOTOFF, BOOTSEG  ! jmp to sec. boot (skipping header).
+	jmpf	BOOTOFF, BOOTSEG  ! jmp to sec. boot (skipping header).	/// Jump to boothead.s:58 or 60
 
 ! Read error: print message, hang forever
 error:
