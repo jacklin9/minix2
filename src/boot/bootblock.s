@@ -64,7 +64,7 @@ boot:
 	push	es
 	push	si		! es:si = partition table entry if hard disk
 
-	mov	di, #LOADOFF+parameters	! char (*di)[DSKPARSIZE] = parameters;
+	mov	di, #LOADOFF+parameters	! char (*di)[DSKPARSIZE] = parameters;	/// parameters see bootblock.s:220
 
 	testb	dl, dl		! Winchester disks if dl >= 0x80
 	jge	floppy
