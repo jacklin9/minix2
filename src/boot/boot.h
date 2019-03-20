@@ -84,7 +84,7 @@ void putchar(int c);
 void reset_video(unsigned mode);
 			/* Reset and clear the screen. */
 
-u16_t get_bus(void);
+u16_t get_bus(void);	/// get_bus see boothead.s:602
 			/* System bus type, XT, AT, or MCA. */
 u16_t get_video(void);
 			/* Display type, MDA to VGA. */

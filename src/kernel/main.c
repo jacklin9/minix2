@@ -60,9 +60,9 @@ PUBLIC void main()
   /* Task stacks. */
   ktsb = (reg_t) t_stack;
 
-  for (t = -NR_TASKS; t <= LOW_USER; ++t) {
+  for (t = -NR_TASKS; t <= LOW_USER; ++t) {	/// Tasks are procs that run only in kernel
 	rp = proc_addr(t);			/* t's process slot */
-	ttp = &tasktab[t + NR_TASKS];		/* t's task attributes */
+	ttp = &tasktab[t + NR_TASKS];		/* t's task attributes */	/// tasktab see table.c:100
 	strcpy(rp->p_name, ttp->name);
 	if (t < 0) {
 		if (ttp->stksize > 0) {
@@ -109,18 +109,18 @@ PUBLIC void main()
 		text_base = 0x100000 >> CLICK_SHIFT;
 	}
 #endif
-	if (!isidlehardware(t)) lock_ready(rp);	/* IDLE, HARDWARE neveready */
+	if (!isidlehardware(t)) lock_ready(rp);	/* IDLE, HARDWARE neveready */	/// lock_ready see proc.c:513
 	rp->p_flags = 0;
 
-	alloc_segments(rp);
+	alloc_segments(rp);	/// alloc_segments see system.c:1118
   }
 
   proc[NR_TASKS+INIT_PROC_NR].p_pid = 1;/* INIT of course has pid 1 */
   bill_ptr = proc_addr(IDLE);		/* it has to point somewhere */
-  lock_pick_proc();
+  lock_pick_proc();	/// lock_pick_proc see proc.c:501
 
   /* Now go to the assembly code to start running the current process. */
-  restart();
+  restart();	/// restart see mpx386.s:423
 }
 
 
