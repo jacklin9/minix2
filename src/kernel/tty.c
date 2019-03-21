@@ -157,56 +157,56 @@ PUBLIC void tty_task()
 #endif
 
   while (TRUE) {
-	/* Handle any events on any of the ttys. */
-	for (tp = FIRST_TTY; tp < END_TTY; tp++) {
-		if (tp->tty_events) handle_events(tp);
-	}
+		/* Handle any events on any of the ttys. */
+		for (tp = FIRST_TTY; tp < END_TTY; tp++) {
+			if (tp->tty_events) handle_events(tp);
+		}
 
-	receive(ANY, &tty_mess);
+		receive(ANY, &tty_mess);
 
-	/* A hardware interrupt is an invitation to check for events. */
-	if (tty_mess.m_type == HARD_INT) continue;
+		/* A hardware interrupt is an invitation to check for events. */
+		if (tty_mess.m_type == HARD_INT) continue;
 
-	/* Check the minor device number. */
-	line = tty_mess.TTY_LINE;
-	if ((line - CONS_MINOR) < NR_CONS) {
-		tp = tty_addr(line - CONS_MINOR);
-	} else
-	if (line == LOG_MINOR) {
-		tp = tty_addr(0);
-	} else
-	if ((line - RS232_MINOR) < NR_RS_LINES) {
-		tp = tty_addr(line - RS232_MINOR + NR_CONS);
-	} else
-	if ((line - TTYPX_MINOR) < NR_PTYS) {
-		tp = tty_addr(line - TTYPX_MINOR + NR_CONS + NR_RS_LINES);
-	} else
-	if ((line - PTYPX_MINOR) < NR_PTYS) {
-		tp = tty_addr(line - PTYPX_MINOR + NR_CONS + NR_RS_LINES);
-		do_pty(tp, &tty_mess);
-		continue;			/* this is a pty, not a tty */
-	} else {
-		tp = NULL;
-	}
+		/* Check the minor device number. */
+		line = tty_mess.TTY_LINE;
+		if ((line - CONS_MINOR) < NR_CONS) {
+			tp = tty_addr(line - CONS_MINOR);
+		} else
+		if (line == LOG_MINOR) {
+			tp = tty_addr(0);
+		} else
+		if ((line - RS232_MINOR) < NR_RS_LINES) {
+			tp = tty_addr(line - RS232_MINOR + NR_CONS);
+		} else
+		if ((line - TTYPX_MINOR) < NR_PTYS) {
+			tp = tty_addr(line - TTYPX_MINOR + NR_CONS + NR_RS_LINES);
+		} else
+		if ((line - PTYPX_MINOR) < NR_PTYS) {
+			tp = tty_addr(line - PTYPX_MINOR + NR_CONS + NR_RS_LINES);
+			do_pty(tp, &tty_mess);
+			continue;			/* this is a pty, not a tty */
+		} else {
+			tp = NULL;
+		}
 
-	/* If the device doesn't exist or is not configured return ENXIO. */
-	if (tp == NULL || !tty_active(tp)) {
-		tty_reply(TASK_REPLY, tty_mess.m_source,
-						tty_mess.PROC_NR, ENXIO);
-		continue;
-	}
+		/* If the device doesn't exist or is not configured return ENXIO. */
+		if (tp == NULL || !tty_active(tp)) {
+			tty_reply(TASK_REPLY, tty_mess.m_source,
+							tty_mess.PROC_NR, ENXIO);
+			continue;
+		}
 
-	/* Execute the requested function. */
-	switch (tty_mess.m_type) {
-	    case DEV_READ:	do_read(tp, &tty_mess);		break;
-	    case DEV_WRITE:	do_write(tp, &tty_mess);	break;
-	    case DEV_IOCTL:	do_ioctl(tp, &tty_mess);	break;
-	    case DEV_OPEN:	do_open(tp, &tty_mess);		break;
-	    case DEV_CLOSE:	do_close(tp, &tty_mess);	break;
-	    case CANCEL:	do_cancel(tp, &tty_mess);	break;
-	    default:		tty_reply(TASK_REPLY, tty_mess.m_source,
-						tty_mess.PROC_NR, EINVAL);
-	}
+		/* Execute the requested function. */
+		switch (tty_mess.m_type) {
+				case DEV_READ:	do_read(tp, &tty_mess);		break;
+				case DEV_WRITE:	do_write(tp, &tty_mess);	break;
+				case DEV_IOCTL:	do_ioctl(tp, &tty_mess);	break;
+				case DEV_OPEN:	do_open(tp, &tty_mess);		break;
+				case DEV_CLOSE:	do_close(tp, &tty_mess);	break;
+				case CANCEL:	do_cancel(tp, &tty_mess);	break;
+				default:		tty_reply(TASK_REPLY, tty_mess.m_source,
+							tty_mess.PROC_NR, EINVAL);
+		}
   }
 }
 

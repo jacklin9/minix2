@@ -60,7 +60,7 @@ PUBLIC void main()
   /* Task stacks. */
   ktsb = (reg_t) t_stack;
 
-  for (t = -NR_TASKS; t <= LOW_USER; ++t) {	/// Tasks are procs that run only in kernel
+  for (t = -NR_TASKS; t <= LOW_USER; ++t) {	/// Tasks are procs that run only in kernel. LOW_USER is the index of INIT task
 	rp = proc_addr(t);			/* t's process slot */
 	ttp = &tasktab[t + NR_TASKS];		/* t's task attributes */	/// tasktab see table.c:100
 	strcpy(rp->p_name, ttp->name);
