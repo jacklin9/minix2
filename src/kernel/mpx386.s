@@ -250,7 +250,7 @@ csinit:
 	outb	INT_CTL			/* reenable master 8259		  */;\
 	sti				/* enable interrupts		  */;\
 	push	irq			/* irq				  */;\
-	call	(_irq_table + 4*irq)	/* eax = (*irq_table[irq])(irq)   */;\
+	call	(_irq_table + 4*irq)	/* eax = (*irq_table[irq])(irq)   */;\	/// irq_table see 
 	pop	ecx							    ;\
 	cli				/* disable interrupts		  */;\
 	test	eax, eax		/* need to reenable irq?	  */;\

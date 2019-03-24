@@ -98,7 +98,7 @@
  */
 
 PUBLIC struct tasktab tasktab[] = {
-	{ tty_task,		TTY_STACK,	"TTY"		},	/// tty_task see 
+	{ tty_task,		TTY_STACK,	"TTY"		},	/// tty_task see tty.c:134
 #if ENABLE_NETWORKING
 	{ dp8390_task,		DP8390_STACK,	"DP8390"	},
 #endif
