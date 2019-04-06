@@ -1,13 +1,13 @@
 # Makefile for the boot monitor package.
 #
 
-/// bootblock is the code that will written to boot block of a disk. Here boot block
+/// bootblock is the code that will be written to boot block of a disk. Here boot block
 /// is sector 0 for floppy disk, or first block of a primary partition in hard drive.
 
-/// masterboot is the code that will written to sector 0 of a hard drive. It contains 
+/// masterboot is the code that will be written to sector 0 of a hard drive. It contains 
 /// a partition table.
 
-/// extboot is the code that will written to sector 0 of a extended partition
+/// extboot is the code that will be written to sector 0 of a extended partition
 
 /// The boot process is as follows:
 /// 1. For floppy: bios loads bootblock from sector 0, and jumps to it. bootblock loads boot

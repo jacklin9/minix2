@@ -38,7 +38,7 @@ PUBLIC void main()
   intr_init(1);
 
   /* Interpret memory sizes. */
-  mem_init();
+  mem_init();	/// mem_init see misc.c:23
 
   /* Clear the process table.
    * Set up mappings for proc_addr() and proc_number() macros.
@@ -81,7 +81,7 @@ PUBLIC void main()
 	rp->p_reg.pc = (reg_t) ttp->initial_pc;
 	rp->p_reg.psw = istaskp(rp) ? INIT_TASK_PSW : INIT_PSW;
 
-	text_clicks = sizes[sizeindex];
+	text_clicks = sizes[sizeindex];	/// sizes is initialized by patch_sizes called by exec_image
 	data_clicks = sizes[sizeindex + 1];
 	rp->p_map[T].mem_phys = text_base;
 	rp->p_map[T].mem_len  = text_clicks;
@@ -89,7 +89,7 @@ PUBLIC void main()
 	rp->p_map[D].mem_len  = data_clicks;
 	rp->p_map[S].mem_phys = text_base + text_clicks + data_clicks;
 	rp->p_map[S].mem_vir  = data_clicks;	/* empty - stack is in data */
-	text_base += text_clicks + data_clicks;	/* ready for next, if server */
+	text_base += text_clicks + data_clicks;	/* ready for next, if server */	/// Phy addr of different modules can be calculated
 	memp->size -= (text_base - memp->base);
 	memp->base = text_base;			/* memory no longer free */
 

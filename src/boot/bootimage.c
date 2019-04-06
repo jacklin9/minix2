@@ -312,10 +312,10 @@ void exec_image(char *image, char *params, size_t paramsize)
 	struct image_header hdr;
 	char *buf;
 	u32_t vsec= 0;		/* Load this sector from image next. */
-	u32_t addr= MINIXPOS;	/* Put it at this address. */
+	u32_t addr= MINIXPOS;	/* Put it at this address. */	/// At 32KB
 	u32_t limit= caddr;	/* But no further than this address. */
 	u32_t n;
-	struct process *procp;	/* Process under construction. */
+	struct process *procp;	/* Process under construction. */	/// An OS module (like kernel, fs, etc)
 	long a_text, a_data, a_bss, a_stack;
 	char *msec, *console;
 	u16_t mode;
@@ -326,7 +326,7 @@ void exec_image(char *image, char *params, size_t paramsize)
 	raw_clear(HEADERPOS, PROCESS_MAX * A_MINHDR);
 
 	/* Read the many different processes: */
-	for (i= 0; vsec < image_size; i++) {
+	for (i= 0; vsec < image_size; i++) {	/// image_size is initialized by select_image called by boot_minix
 		if (i == PROCESS_MAX) {
 			printf("There are more then %d programs in %s\n",
 				PROCESS_MAX, image);
@@ -458,7 +458,7 @@ void exec_image(char *image, char *params, size_t paramsize)
 			addr= 0x100000L;
 			limit= 0x100000L + get_ext_memsize() * 1024L;
 		}
-	}
+	}	/// Reading each module ends here
 
 	if ((n_procs= i) == 0) {
 		printf("There are no programs in %s\n", image);
@@ -639,10 +639,10 @@ void bootminix(void)
 	invalidate_cache();
 
 	printf("\nLoading ");
-	pretty_image(image);
+	pretty_image(image);	/// Print the image name
 	printf(".\n\n");
 
-	exec_image(image, minixparams, paramsize);
+	exec_image(image, minixparams, paramsize);	/// Really load and execute the OS image
 
 	switch (errno) {
 	case ENOEXEC:

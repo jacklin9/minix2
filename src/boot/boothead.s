@@ -116,12 +116,12 @@ sepID:
 	xor	ax, ax
 	mov	dx, cs
 	call	seg2abs
-	mov	_caddr+0, ax
+	mov	_caddr+0, ax	/// caddr see boot.h:49
 	mov	_caddr+2, dx
 	xor	ax, ax
 	mov	dx, ds
 	call	seg2abs
-	mov	_daddr+0, ax
+	mov	_daddr+0, ax	/// daddr see boot.h:49
 	mov	_daddr+2, dx
 	push	ds
 	mov	ax, #LOADSEG
@@ -814,7 +814,7 @@ noret386:
 	push	6(bp)
 	push	4(bp)		! 32 bit far address to kernel entry point
 
-	call	real2prot	! Switch to protected mode
+	call	real2prot	! Switch to protected mode	/// real2prot see boothead.s:888
 	mov	ax, #DS_SELECTOR ! Kernel data
 	mov	ds, ax
 	mov	ax, #ES_SELECTOR ! Flat 4 Gb

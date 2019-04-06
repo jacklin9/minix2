@@ -14,7 +14,7 @@
 
 #define ESC		'\33'	/* Escape key. */
 
-#define HEADERPOS      0x00600L	/* Place for an array of struct exec's. */
+#define HEADERPOS      0x00600L	/* Place for an array of struct exec's. */ /// Exec header array at 24KB
 
 #define MINIXPOS       0x00800L	/* Minix is loaded here (rounded up towards
 				 * the click size).

@@ -97,7 +97,8 @@ void bwrite(FILE *f, char *name, void *buf, size_t len)
 long total_text= 0, total_data= 0, total_bss= 0;
 int making_image= 0;
 
-void read_header(int talk, char *proc, FILE *procf, struct image_header *ihdr)
+void read_header(int talk, char *proc, FILE *procf, struct image_header *ihdr)	/// proc may have label (in format label:filepath)
+/// talk means whether to display information to stdout
 /* Read the a.out header of a program and check it.  If procf happens to be
  * nil then the header is already in *image_hdr and need only be checked.
  */
@@ -427,6 +428,9 @@ void make_bootable(enum howto how, char *device, char *bootblock,
  * should or shoudn't be a file system on the disk.  The images in the imagev
  * vector are added to the end of the device.
  */
+/// Possible values of how are: FS and boot:
+/// FS: there is a file system on the dev
+/// BOOT: there is no file system on the dev
 {
 	char buf[BLOCK_SIZE + 256], *adrp, *parmp;
 	struct fileaddr {
@@ -483,19 +487,22 @@ void make_bootable(enum howto how, char *device, char *bootblock,
 		ino= 0;
 	}
 
-	if (ino == 0) {
+	/// ino is supposed to be the inode of boot file. If the install dest contains a file system, the boot
+	/// file should already be in the fs; if the install dest is a raw dev, copy the boot code to device
+
+	if (ino == 0) {	/// It is a raw install
 		/* For a raw installation, we need to copy the boot code onto
 		 * the device, so we need to look at the file to be copied.
 		 */
 		if (stat(bootcode, &st) < 0) fatal(bootcode);
 
 		if ((bootf= fopen(bootcode, "r")) == nil) fatal(bootcode);
-	} else {
+	} else {	/// It is a install to file system
 		/* Boot code is present in the file system. */
 		r_stat(ino, &st);
 
 		/* Get the header from the first block. */
-		if ((addr= r_vir2abs((off_t) 0)) == 0) {
+		if ((addr= r_vir2abs((off_t) 0)) == 0) {	/// r_vir2abs relies on curfil which is initialized by r_stat
 			boothdr.a_magic[0]= !A_MAGIC0;
 		} else {
 			readblock(addr, buf);
@@ -504,6 +511,7 @@ void make_bootable(enum howto how, char *device, char *bootblock,
 		bootf= nil;
 		dummy.process= boothdr;
 	}
+	/// bootf points to the boot code file (in the caes of file system) or null (in the case of raw dev)
 	/* See if it is an executable (read_header does the check). */
 	read_header(0, bootcode, bootf, &dummy);
 	boothdr= dummy.process;
@@ -525,8 +533,8 @@ void make_bootable(enum howto how, char *device, char *bootblock,
 	bap->count= 0;	/* Trick to get the address recording going. */
 
 	for (sector= 0; sector < max_sector; sector++) {
-		if (ino == 0) {
-			addr= fssize + (sector / RATIO);
+		if (ino == 0) {	/// It is raw
+			addr= fssize + (sector / RATIO);	/// fssize should be 0. RATIO is the number of sectors per file block
 		} else if ((addr= r_vir2abs(sector / RATIO)) == 0) {
 			fprintf(stderr, "installboot: %s has holes!\n",
 								bootcode);
@@ -806,10 +814,10 @@ int main(int argc, char **argv)
 		extract_image(argv[2]);
 	} else
 	if (argc >= 5 && isoption(argv[1], "-device")) {	/// Write image beyond file system
-		make_bootable(FS, argv[2], argv[3], argv[4], argv + 5);
+		make_bootable(FS, argv[2], argv[3], argv[4], argv + 5);	/// arv[2] = dev, argv[3] = bootblock, argv[4] = boot
 	} else
 	if (argc >= 6 && isoption(argv[1], "-boot")) {	/// Write image to disk
-		make_bootable(BOOT, argv[2], argv[3], argv[4], argv + 5);
+		make_bootable(BOOT, argv[2], argv[3], argv[4], argv + 5);	/// arv[2] = dev, argv[3] = bootblock, argv[4] = boot
 	} else
 	if (argc == 4 && isoption(argv[1], "-master")) {
 		install_master(argv[2], argv[3], nil);

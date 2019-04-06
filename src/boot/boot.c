@@ -245,7 +245,7 @@ char *onetoken(char **aline, int arg)
 	*aline= line;
 
 	/* Don't do odd junk (nor the terminating 0!). */
-	if ((unsigned) *line < ' ' && *line != '\n') return nil;
+	if ((unsigned) *line < ' ' && *line != '\n') return nil;	/// Abnormal chars encountered
 
 	if (arg) {
 		/* Function argument, anything goes except ). */
@@ -257,8 +257,7 @@ char *onetoken(char **aline, int arg)
 			line++;
 		}
 		while (line > *aline && line[-1] == ' ') line--;
-	} else
-	if (sugar(line)) {
+	} else if (sugar(line)) {
 		/* Single character token. */
 		line++;
 	} else {
@@ -291,7 +290,8 @@ token **tokenize(token **acmds, char *line, int *fundef)
  * ';', '=', '(', ')' '{', '}', and '\n' as single character tokens.
  */
 {
-	int fd= *fundef;
+	int fd= *fundef;	/// fd == 0: parsing not in function definition;
+						/// fd != 0: parsing in function definition
 	char *tok;
 	token *newcmd;
 	static char funsugar[]= { '(', 0, ')', '{', '}' };
@@ -299,12 +299,10 @@ token **tokenize(token **acmds, char *line, int *fundef)
 	while ((tok= onetoken(&line, fd == 1)) != nil) {
 		if (fd == 1) {
 			fd++;	/* Function argument. */
-		} else
-		if (funsugar[fd] == tok[0]) {
+		} else if (funsugar[fd] == tok[0]) {
 			/* Recognize next token as part of a function def. */
 			fd= tok[0] == '}' ? 0 : fd + 1;
-		} else
-		if (fd != 0) {
+		} else if (fd != 0) {
 			if (tok[0] == ';' && fd == 3) {
 				/* Kill separator between ')' and '{'. */
 				free(tok);
@@ -370,19 +368,22 @@ void migrate(void)
 {
 	u32_t oldaddr= caddr;
 	u32_t memsize= get_memsize() * 1024L;	/// get_memsize see boothead.s:675
-	u32_t newaddr= memsize - runsize;
+	u32_t newaddr= memsize - runsize;	/// runsize is the size of boot in mem at runtime.
+										/// Try to copy the boot program to the end of mem
 #if !DOS
-	u32_t dma64k= (memsize - 1) & ~0xFFFFL;
+	u32_t dma64k= (memsize - 1) & ~0xFFFFL;	/// The final addr % 64K
 	vector dskbase;
 
 	/* Check if data segment crosses a 64k boundary. */
-	if (newaddr + (daddr - caddr) < dma64k) newaddr= dma64k - runsize;
+	if (newaddr + (daddr - caddr) < dma64k) newaddr= dma64k - runsize;	/// Make sure boot does not cross 64K boundary
 
 	/* Get some variables into my address space before they get mashed. */
-	if (device < 0x80) {
+	if (device < 0x80) {	/// device is the boot device, set at boothead.s:103
 		/* Floppy disk parameters. */
-		raw_copy(mon2abs(&dskbase), DSKBASE * sizeof(vector),
-							sizeof(vector));
+		raw_copy(mon2abs(&dskbase), DSKBASE * sizeof(vector),	/// mon2abs see boothead.s:166 - get the absolute addr of a logical addr in mon
+							sizeof(vector));	/// DSKBASE is actually an interrupt vector, but it doesn't contain
+												/// the interrupt service routine address; instead it contains the address
+												/// of disk parameters
 		raw_copy(mon2abs(dskpars), vec2abs(&dskbase),
 							DSKPARSIZE);
 	} else {
@@ -398,13 +399,13 @@ void migrate(void)
 	/* Copy code and data. */
 	raw_copy(newaddr, oldaddr, runsize);	/// raw_copy see boothead.s:211
 
-	relocate();	/* Make the copy running. */
+	relocate();	/* Make the copy running. */	/// relocate see boothead.s:307
 
 #if !DOS
 	/* Set the parameters for the boot device using global variables
 	 * device and dskpars.  (This particular call should not fail.)
 	 */
-	(void) dev_geometry();
+	(void) dev_geometry();	/// dev_geometry see boothead.s:
 #endif /* !DOS */
 }
 
@@ -437,7 +438,7 @@ int get_master(char *master, struct part_entry **table, u32_t pos)
 
 void initialize(void)
 {
-	char master[SECTOR_SIZE];
+	char master[SECTOR_SIZE];	/// Sector buffer
 	struct part_entry *table[NR_PARTITIONS];
 	int r, p;
 	u32_t masterpos;
@@ -737,11 +738,11 @@ void get_parameters(void)
 	b_setvar(E_SPECIAL|E_VAR|E_DEV, "rootdev", "ram");
 	b_setvar(E_SPECIAL|E_VAR|E_DEV, "ramimagedev", "bootdev");
 	b_setvar(E_SPECIAL|E_VAR, "ramsize", "0");
-	b_setvar(E_SPECIAL|E_VAR, "processor", u2a(getprocessor()));
-	b_setvar(E_SPECIAL|E_VAR, "bus", bus_type[get_bus()]);
-	b_setvar(E_SPECIAL|E_VAR, "memsize", u2a(get_memsize()));
-	b_setvar(E_SPECIAL|E_VAR, "emssize", ul2a(get_ext_memsize()));
-	b_setvar(E_SPECIAL|E_VAR, "video", vid_type[get_video()]);
+	b_setvar(E_SPECIAL|E_VAR, "processor", u2a(getprocessor()));	/// getprocessor see getprocessor.s:12
+	b_setvar(E_SPECIAL|E_VAR, "bus", bus_type[get_bus()]);	/// get_bus see boothead.s:602
+	b_setvar(E_SPECIAL|E_VAR, "memsize", u2a(get_memsize()));	/// get_memsize see boothead.s:675
+	b_setvar(E_SPECIAL|E_VAR, "emssize", ul2a(get_ext_memsize()));	/// get_ext_memsize see boothead.s:682
+	b_setvar(E_SPECIAL|E_VAR, "video", vid_type[get_video()]);	/// get_video see boothead.s:632
 	b_setvar(E_SPECIAL|E_VAR, "chrome", vid_chrome[get_video() & 1]);
 
 	/* Variables boot needs: */
@@ -1272,7 +1273,7 @@ void execute(void)
 	size_t n= 0;
 
 	/* There must be a separator lurking somewhere. */
-	for (sep= cmds; sep != nil && sep->token[0] != ';'; sep= sep->next) n++;
+	for (sep= cmds; sep != nil && sep->token[0] != ';'; sep= sep->next) n++;	/// Commands are tokens separated by ;
 
 	if ((second= cmds->next) != nil
 		&& (third= second->next) != nil
@@ -1281,11 +1282,11 @@ void execute(void)
 
 		/* Null command? */
 	if (n == 0) {
-		voidtoken();
+		voidtoken();	/// Skip one token
 		return;
 	} else
 		/* name = [device] value? */
-	if ((n == 3 || n == 4)
+	if ((n == 3 || n == 4)	/// The command consists of 3 or 4 tokens?
 		&& !sugar(name)
 		&& second->token[0] == '='
 		&& !sugar(third->token)
@@ -1475,7 +1476,7 @@ void boot(void)
 	 */
 	reset_video(get_video() & 1 ? COLOR_MODE : MONO_MODE);	/// get_video see boothead.s:632. reset_video see boothead.s:549
 
-	printf("\nMinix boot monitor %s\n", version);
+	printf("\nMinix boot monitor %s\n", version);	/// printk see printk.c:19
 	printf("\nPress ESC to enter the monitor\n");
 
 	/* Initialize tables under DOS. */
@@ -1491,22 +1492,23 @@ void boot(void)
 	init_cache();
 
 	/* Get environment variables from the parameter sector. */
-	get_parameters();
+	get_parameters();	/// Initialize parameters and get commands
 
 	/* Read and check the superblock. */
 	fsok= r_super() != 0;
 
 	while (1) {
 		/* While there are commands, execute them! */
-		while (cmds != nil) {
-			execute();
+		while (cmds != nil) {	/// First run commands stored in parameter sector and then run monitor to read commands from console
+			execute();	/// Execute one complete command by passing the tokens stored in cmds
+						/// Execute is the core of boot
 			if (err) {
 				/* An error, stop interpreting. */
 				while (cmds != nil) voidtoken();
 				err= 0;
 				break;
 			}
-			(void) expired();
+			(void) expired();	/// Run timer command
 			remote_code();
 		}
 		/* The "monitor" is just a "read one command" thing. */
