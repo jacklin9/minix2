@@ -140,7 +140,7 @@ PUBLIC void tty_task()
   unsigned line;
 
   /* Initialize the terminal lines. */
-  for (tp = FIRST_TTY; tp < END_TTY; tp++) tty_init(tp);
+  for (tp = FIRST_TTY; tp < END_TTY; tp++) tty_init(tp);	/// Initialize console (tty struct init and interrupt vector install)
 
   /* Display the Minix startup banner. */
   printf("Minix %s.%s  Copyright 1997 Prentice-Hall, Inc.\n\n",
@@ -1283,15 +1283,13 @@ tty_t *tp;			/* TTY line to initialize. */
   tp->tty_intail = tp->tty_inhead = tp->tty_inbuf;
   tp->tty_min = 1;
   tp->tty_termios = termios_defaults;
-  tp->tty_icancel = tp->tty_ocancel = tp->tty_ioctl = tp->tty_close =
-								tty_devnop;
+  tp->tty_icancel = tp->tty_ocancel = tp->tty_ioctl = tp->tty_close = tty_devnop;
   if (tp < tty_addr(NR_CONS)) {
-	scr_init(tp);
-  } else
-  if (tp < tty_addr(NR_CONS+NR_RS_LINES)) {
-	rs_init(tp);
+		scr_init(tp);
+  } else if (tp < tty_addr(NR_CONS+NR_RS_LINES)) {
+		rs_init(tp);
   } else {
-	pty_init(tp);
+		pty_init(tp);
   }
 }
 

@@ -125,13 +125,13 @@ PUBLIC void clock_task()
      unlock();
 
      switch (opcode) {
-	case HARD_INT:   do_clocktick();	break;
-	case GET_UPTIME: do_getuptime();	break;
-	case GET_TIME:	 do_get_time();		break;
-	case SET_TIME:	 do_set_time(&mc);	break;
-	case SET_ALARM:	 do_setalarm(&mc);	break;
-	case SET_SYNC_AL:do_setsyn_alrm(&mc);	break;
-	default: panic("clock task got bad message", mc.m_type);
+      case HARD_INT:   do_clocktick();	break;
+      case GET_UPTIME: do_getuptime();	break;
+      case GET_TIME:	 do_get_time();		break;
+      case SET_TIME:	 do_set_time(&mc);	break;
+      case SET_ALARM:	 do_setalarm(&mc);	break;
+      case SET_SYNC_AL:do_setsyn_alrm(&mc);	break;
+      default: panic("clock task got bad message", mc.m_type);
      }
 
     /* Send reply, except for clock tick. */
@@ -476,7 +476,7 @@ int irq;
 #else
       (rdy_head[USER_Q] != NIL_PROC || rdy_head[SHADOW_Q] != NIL_PROC)) {
 #endif
-	interrupt(CLOCK);
+	interrupt(CLOCK); /// interrupt see proc.c:51
 	return 1;	/* Reenable interrupts */
   }
 

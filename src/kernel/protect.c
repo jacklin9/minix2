@@ -99,8 +99,9 @@ PUBLIC void prot_init()
 	unsigned char vec_nr;
 	unsigned char privilege;
   }
-  gate_table[] = {
-	divide_error, DIVIDE_VECTOR, INTR_PRIVILEGE,
+  gate_table[] = {  /// Used to initialize idt table. Note that syscall vector is not listed here but at line 196
+                    /// Three of them (p_s_call, level0_call, s_call)
+	divide_error, DIVIDE_VECTOR, INTR_PRIVILEGE,  /// divice_error see mpx386.s:456
 	single_step_exception, DEBUG_VECTOR, INTR_PRIVILEGE,
 	nmi, NMI_VECTOR, INTR_PRIVILEGE,
 	breakpoint_exception, BREAKPOINT_VECTOR, USER_PRIVILEGE,

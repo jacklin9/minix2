@@ -134,14 +134,14 @@ message *m_ptr;			/* pointer to message */
 
   /* Check for bad system call parameters. */
   if (!isoksrc_dest(src_dest)) return(E_BAD_SRC);
-  rp = proc_ptr;
+  rp = proc_ptr;  /// currently running proc
 
-  if (isuserp(rp) && function != BOTH) return(E_NO_PERM);
+  if (isuserp(rp) && function != BOTH) return(E_NO_PERM); /// User proc can only send and receive at same time
   
   /* The parameters are ok. Do the call. */
   if (function & SEND) {
 	/* Function = SEND or BOTH. */
-	n = mini_send(rp, src_dest, m_ptr);
+	n = mini_send(rp, src_dest, m_ptr); /// First send and then receive
 	if (function == SEND || n != OK)
 		return(n);	/* done, or SEND failed */
   }
@@ -196,42 +196,42 @@ message *m_ptr;			/* pointer to message buffer */
 #endif
 
   /* Check for deadlock by 'caller_ptr' and 'dest' sending to each other. */
-  if (dest_ptr->p_flags & SENDING) {
-	next_ptr = proc_addr(dest_ptr->p_sendto);
-	while (TRUE) {
-		if (next_ptr == caller_ptr) return(ELOCKED);
-		if (next_ptr->p_flags & SENDING)
-			next_ptr = proc_addr(next_ptr->p_sendto);
-		else
-			break;
-	}
+  if (dest_ptr->p_flags & SENDING) {  /// Dest is sending messsage
+    next_ptr = proc_addr(dest_ptr->p_sendto);
+    while (TRUE) {
+      if (next_ptr == caller_ptr) return(ELOCKED);
+      if (next_ptr->p_flags & SENDING)
+        next_ptr = proc_addr(next_ptr->p_sendto);
+      else
+        break;
+    }
   }
 
   /* Check to see if 'dest' is blocked waiting for this message. */
   if ( (dest_ptr->p_flags & (RECEIVING | SENDING)) == RECEIVING &&
        (dest_ptr->p_getfrom == ANY ||
         dest_ptr->p_getfrom == proc_number(caller_ptr))) {
-	/* Destination is indeed waiting for this message. */
-	CopyMess(proc_number(caller_ptr), caller_ptr, m_ptr, dest_ptr,
-		 dest_ptr->p_messbuf);
-	dest_ptr->p_flags &= ~RECEIVING;	/* deblock destination */
-	if (dest_ptr->p_flags == 0) ready(dest_ptr);
+    /* Destination is indeed waiting for this message. */
+    CopyMess(proc_number(caller_ptr), caller_ptr, m_ptr, dest_ptr,
+      dest_ptr->p_messbuf);
+    dest_ptr->p_flags &= ~RECEIVING;	/* deblock destination */
+    if (dest_ptr->p_flags == 0) ready(dest_ptr);
   } else {
-	/* Destination is not waiting.  Block and queue caller. */
-	caller_ptr->p_messbuf = m_ptr;
-	if (caller_ptr->p_flags == 0) unready(caller_ptr);
-	caller_ptr->p_flags |= SENDING;
-	caller_ptr->p_sendto= dest;
+    /* Destination is not waiting.  Block and queue caller. */
+    caller_ptr->p_messbuf = m_ptr;
+    if (caller_ptr->p_flags == 0) unready(caller_ptr);
+    caller_ptr->p_flags |= SENDING;
+    caller_ptr->p_sendto= dest;
 
-	/* Process is now blocked.  Put in on the destination's queue. */
-	if ( (next_ptr = dest_ptr->p_callerq) == NIL_PROC)
-		dest_ptr->p_callerq = caller_ptr;
-	else {
-		while (next_ptr->p_sendlink != NIL_PROC)
-			next_ptr = next_ptr->p_sendlink;
-		next_ptr->p_sendlink = caller_ptr;
-	}
-	caller_ptr->p_sendlink = NIL_PROC;
+    /* Process is now blocked.  Put in on the destination's queue. */
+    if ( (next_ptr = dest_ptr->p_callerq) == NIL_PROC)
+      dest_ptr->p_callerq = caller_ptr;
+    else {
+      while (next_ptr->p_sendlink != NIL_PROC)
+        next_ptr = next_ptr->p_sendlink;
+      next_ptr->p_sendlink = caller_ptr;
+    }
+    caller_ptr->p_sendlink = NIL_PROC;
   }
   return(OK);
 }
@@ -256,29 +256,29 @@ message *m_ptr;			/* pointer to message buffer */
 
   /* Check to see if a message from desired source is already available. */
   if (!(caller_ptr->p_flags & SENDING)) {
-	/* Check caller queue. */
+	  /* Check caller queue. */
     for (sender_ptr = caller_ptr->p_callerq; sender_ptr != NIL_PROC;
-	 previous_ptr = sender_ptr, sender_ptr = sender_ptr->p_sendlink) {
-	if (src == ANY || src == proc_number(sender_ptr)) {
-		/* An acceptable message has been found. */
-		CopyMess(proc_number(sender_ptr), sender_ptr,
-			 sender_ptr->p_messbuf, caller_ptr, m_ptr);
-		if (sender_ptr == caller_ptr->p_callerq)
-			caller_ptr->p_callerq = sender_ptr->p_sendlink;
-		else
-			previous_ptr->p_sendlink = sender_ptr->p_sendlink;
-		if ((sender_ptr->p_flags &= ~SENDING) == 0)
-			ready(sender_ptr);	/* deblock sender */
-		return(OK);
-	}
+        previous_ptr = sender_ptr, sender_ptr = sender_ptr->p_sendlink) {
+	    if (src == ANY || src == proc_number(sender_ptr)) {
+		    /* An acceptable message has been found. */
+		    CopyMess(proc_number(sender_ptr), sender_ptr,
+			  sender_ptr->p_messbuf, caller_ptr, m_ptr);
+		    if (sender_ptr == caller_ptr->p_callerq)
+			    caller_ptr->p_callerq = sender_ptr->p_sendlink;
+		    else
+			    previous_ptr->p_sendlink = sender_ptr->p_sendlink;
+        if ((sender_ptr->p_flags &= ~SENDING) == 0)
+          ready(sender_ptr);	/* deblock sender */
+		    return(OK);
+	    }
     }
 
     /* Check for blocked interrupt. */
     if (caller_ptr->p_int_blocked && isrxhardware(src)) {
-	m_ptr->m_source = HARDWARE;
-	m_ptr->m_type = HARD_INT;
-	caller_ptr->p_int_blocked = FALSE;
-	return(OK);
+      m_ptr->m_source = HARDWARE;
+      m_ptr->m_type = HARD_INT;
+      caller_ptr->p_int_blocked = FALSE;
+      return(OK);
     }
   }
 
@@ -292,7 +292,7 @@ message *m_ptr;			/* pointer to message buffer */
    * time to tell MM about them, since it will be able to accept the message.
    */
   if (sig_procs > 0 && proc_number(caller_ptr) == MM_PROC_NR && src == ANY)
-	inform();
+	  inform(); /// inform see system.c:1006
   return(OK);
 }
 

@@ -250,7 +250,8 @@ csinit:
 	outb	INT_CTL			/* reenable master 8259		  */;\
 	sti				/* enable interrupts		  */;\
 	push	irq			/* irq				  */;\
-	call	(_irq_table + 4*irq)	/* eax = (*irq_table[irq])(irq)   */;\	/// irq_table see 
+	call	(_irq_table + 4*irq)	/* eax = (*irq_table[irq])(irq)   */;\	/// irq_table is initialized by calling put_irq_handler
+																			/// Interrupt vector table is at protect.c:102
 	pop	ecx							    ;\
 	cli				/* disable interrupts		  */;\
 	test	eax, eax		/* need to reenable irq?	  */;\
@@ -261,6 +262,12 @@ csinit:
 0:	ret				/* restart (another) process      */
 
 ! Each of these entry points is an expansion of the hwint_master macro
+/// Following are hardware interrupt handling entries. Referenced by gate_table at protect.c:102
+/// When an interrupt happens at user level, hardware does the following:
+/// 1. turn CPU to level 0
+/// 2. load ss and esp with fields ss0 and esp0
+/// 3. push following user level fields to kernel stack: ss, esp, eflags, CS, EIP
+/// 4. jump to interrupt vetor
 	.align	16
 _hwint00:		! Interrupt routine for irq 0 (the clock).
 	hwint_master(0)
@@ -319,6 +326,7 @@ _hwint07:		! Interrupt routine for irq 7 (printer)
 0:	ret				/* restart (another) process      */
 
 ! Each of these entry points is an expansion of the hwint_slave macro
+/// Following are hardware interrupt handling entries. Referenced by gate_table at protect.c:102
 	.align	16
 _hwint08:		! Interrupt routine for irq 8 (realtime clock)
 	hwint_slave(8)
@@ -385,6 +393,13 @@ set_restart1:
 !*===========================================================================*
 !*				_s_call					     *
 !*===========================================================================*
+/// Following are sys call entries. Referenced by gate_table at protect.c:102
+/// When a sys call happens at user level, hardware does the following:
+/// 1. turn CPU to level 0
+/// 2. load ss and esp with fields ss0 and esp0
+/// 3. push following user level fields to kernel stack: ss, esp, eflags, CS, EIP
+/// 4. jump to interrupt vetor
+
 	.align	16
 _s_call:
 _p_s_call:
@@ -410,7 +425,7 @@ _p_s_call:
 	push	ebx		! pointer to user message
 	push	eax		! src/dest
 	push	ecx		! SEND/RECEIVE/BOTH
-	call	_sys_call	! sys_call(function, src_dest, m_ptr)
+	call	_sys_call	! sys_call(function, src_dest, m_ptr)	/// sys_call see proc.c:121
 				! caller is now explicitly in proc_ptr
 	mov	AXREG(esi), eax	! sys_call MUST PRESERVE si
 	cli			! disable interrupts 
@@ -448,9 +463,20 @@ restart1:
 !*===========================================================================*
 !*				exception handlers			     *
 !*===========================================================================*
+/// Following are exception handling entries. Referenced by gate_table at protect.c:102
+/// When an exception happens from user level, hardware does following things:
+/// 1. turn CPU to level 0
+/// 2. load ss and esp with fields ss0 and esp0
+/// 3. push following user level fields to kernel stack: ss, esp, eflags, CS, EIP, error code
+/// 4. jump to interrupt vetor
+///
+/// When an exception happens from kernel level, hardware does following things:
+/// 1. turn CPU to level 0 (it already is)
+/// 2. push following kernel level fields to kernel stack: eflags, CS, EIP, error code
+/// 3. jump to interrupt vetor
 _divide_error:
 	push	DIVIDE_VECTOR
-	jmp	exception
+	jmp	exception	/// exception see mpx386.s:531
 
 _single_step_exception:
 	push	DEBUG_VECTOR
@@ -541,21 +567,22 @@ exception1:				! Common for all exceptions.
 	mov	eax, 8+4(esp)		! old eflags
  sseg	mov	(old_eflags), eax
 	pop	eax
-	call	save
+	call	save	/// save see mpx386.s:365
 	push	(old_eflags)
 	push	(old_cs)
 	push	(old_eip)
 	push	(trap_errno)
 	push	(ex_number)
 	call	_exception		! (ex_number, trap_errno, old_eip,
-					!	old_cs, old_eflags)
+					!	old_cs, old_eflags)	/// exception see exception.c:13
 	add	esp, 5*4
 	cli
-	ret
+	ret	/// Generally return to restart at mpx386.s:427
 
 !*===========================================================================*
 !*				level0_call				     *
 !*===========================================================================*
+/// Following are sys call entries. Referenced by gate_table at protect.c:102
 _level0_call:
 	call	save
 	jmp	(_level0_func)

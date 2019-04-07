@@ -1,0 +1,5 @@
+Import files:
+1. mpx386.s: this file contains kernel entry code, hardware interrupt handling code, exception handling code,
+    and sys call code
+2. table.c: this file contains a table tasktab that lists the entry points of kernel tasks and services
+3. files in dir src/lib/posix are implementations of user level sys call entries

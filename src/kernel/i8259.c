@@ -53,7 +53,7 @@ int mine;
 	 * has just one controller, because it must run in real mode.)
 	 */
 	out_byte(INT_CTL, ps_mca ? ICW1_PS : ICW1_AT);
-	out_byte(INT_CTLMASK, mine ? IRQ0_VECTOR : BIOS_IRQ0_VEC);
+	out_byte(INT_CTLMASK, mine ? IRQ0_VECTOR : BIOS_IRQ0_VEC);  /// IRQ0 is mapped to interrupt NO IRQ0_VECTOR
 							/* ICW2 for master */
 	out_byte(INT_CTLMASK, (1 << CASCADE_IRQ));	/* ICW3 tells slaves */
 	out_byte(INT_CTLMASK, ICW4_AT);

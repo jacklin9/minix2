@@ -57,7 +57,7 @@ PUBLIC void main()
 	if (fs_call < 0 || fs_call >= NCALLS)
 		error = EBADCALL;
 	else
-		error = (*call_vector[fs_call])();
+		error = (*call_vector[fs_call])();  /// call_vector see table.c:18
 
 	/* Copy the results back to the user and send reply. */
 	if (dont_reply) continue;
