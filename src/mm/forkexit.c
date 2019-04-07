@@ -155,7 +155,7 @@ int exit_status;		/* the process' exit status (for parent) */
   if (rmp->mp_flags & ALARM_ON) set_alarm(proc_nr, (unsigned) 0);
 
   /* Tell the kernel and FS that the process is no longer runnable. */
-  tell_fs(EXIT, proc_nr, 0, 0);  /* file system can free the proc slot */
+  tell_fs(EXIT, proc_nr, 0, 0);  /* file system can free the proc slot */ /// tell_fs see utility.c:93
   sys_xit(rmp->mp_parent, proc_nr, &base, &size);
 #if (SHADOWING == 1)
   free_mem(base, size);

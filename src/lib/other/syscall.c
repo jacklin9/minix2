@@ -8,7 +8,7 @@ register message *msgptr;
   int status;
 
   msgptr->m_type = syscallnr;
-  status = _sendrec(who, msgptr);
+  status = _sendrec(who, msgptr); /// _sendrec see i386/rts/_sendrec.s:43
   if (status != 0) {
 	/* 'sendrec' itself failed. */
 	/* XXX - strerror doesn't know all the codes */

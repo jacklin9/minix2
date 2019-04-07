@@ -47,22 +47,22 @@ PUBLIC void main()
 
   /* This is the main loop that gets work, processes it, and sends replies. */
   while (TRUE) {
-	get_work();		/* sets who and fs_call */
+    get_work();		/* sets who and fs_call */
 
-	fp = &fproc[who];	/* pointer to proc table struct */
-	super_user = (fp->fp_effuid == SU_UID ? TRUE : FALSE);   /* su? */
-	dont_reply = FALSE;	/* in other words, do reply is default */
+    fp = &fproc[who];	/* pointer to proc table struct */
+    super_user = (fp->fp_effuid == SU_UID ? TRUE : FALSE);   /* su? */
+    dont_reply = FALSE;	/* in other words, do reply is default */
 
-	/* Call the internal function that does the work. */
-	if (fs_call < 0 || fs_call >= NCALLS)
-		error = EBADCALL;
-	else
-		error = (*call_vector[fs_call])();  /// call_vector see table.c:18
+    /* Call the internal function that does the work. */
+    if (fs_call < 0 || fs_call >= NCALLS)
+      error = EBADCALL;
+    else
+      error = (*call_vector[fs_call])();  /// call_vector see table.c:18
 
-	/* Copy the results back to the user and send reply. */
-	if (dont_reply) continue;
-	reply(who, error);
-	if (rdahed_inode != NIL_INODE) read_ahead(); /* do block read ahead */
+    /* Copy the results back to the user and send reply. */
+    if (dont_reply) continue;
+    reply(who, error);
+    if (rdahed_inode != NIL_INODE) read_ahead(); /* do block read ahead */
   }
 }
 
@@ -142,17 +142,17 @@ PRIVATE void fs_init()
 
   /* Initialize the 'fproc' fields for process 0 .. INIT. */
   for (i = 0; i <= LOW_USER; i+= 1) {
-	if (i == FS_PROC_NR) continue;	/* do not initialize FS */
-	fp = &fproc[i];
-	rip = get_inode(ROOT_DEV, ROOT_INODE);
-	fp->fp_rootdir = rip;
-	dup_inode(rip);
-	fp->fp_workdir = rip;
-	fp->fp_realuid = (uid_t) SYS_UID;
-	fp->fp_effuid = (uid_t) SYS_UID;
-	fp->fp_realgid = (gid_t) SYS_GID;
-	fp->fp_effgid = (gid_t) SYS_GID;
-	fp->fp_umask = ~0;
+    if (i == FS_PROC_NR) continue;	/* do not initialize FS */
+    fp = &fproc[i];
+    rip = get_inode(ROOT_DEV, ROOT_INODE);
+    fp->fp_rootdir = rip;
+    dup_inode(rip);
+    fp->fp_workdir = rip;
+    fp->fp_realuid = (uid_t) SYS_UID;
+    fp->fp_effuid = (uid_t) SYS_UID;
+    fp->fp_realgid = (gid_t) SYS_GID;
+    fp->fp_effgid = (gid_t) SYS_GID;
+    fp->fp_umask = ~0;
   }
 
   /* Certain relations must hold for the file system to work at all. */
@@ -351,7 +351,7 @@ dev_t super_dev;			/* place to get superblock from */
   sp->s_dev = super_dev;
 
   /* Check super_block for consistency (is it the right diskette?). */
-  bad = (read_super(sp) != OK);
+  bad = (read_super(sp) != OK); /// read_super see super.c:189
   if (!bad) {
 	rip = get_inode(super_dev, ROOT_INODE);	/* inode for root dir */
 	if ( (rip->i_mode & I_TYPE) != I_DIRECTORY || rip->i_nlinks < 3) bad++;

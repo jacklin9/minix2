@@ -265,7 +265,7 @@ int rw_flag;			/* READING or WRITING */
   if ( (dev = bp->b_dev) != NO_DEV) {
 	pos = (off_t) bp->b_blocknr * BLOCK_SIZE;
 	op = (rw_flag == READING ? DEV_READ : DEV_WRITE);
-	r = dev_io(op, FALSE, dev, pos, BLOCK_SIZE, FS_PROC_NR, bp->b_data);
+	r = dev_io(op, FALSE, dev, pos, BLOCK_SIZE, FS_PROC_NR, bp->b_data);  /// dev_io see device.c:34
 	if (r != BLOCK_SIZE) {
 	    if (r >= 0) r = END_OF_FILE;
 	    if (r != END_OF_FILE)

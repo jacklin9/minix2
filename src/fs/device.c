@@ -54,7 +54,7 @@ char *buff;			/* virtual address of the buffer */
   dev_mess.TTY_FLAGS = nonblock; /* temporary kludge */
 
   /* Call the task. */
-  (*dmap[major].dmap_rw)(task, &dev_mess);
+  (*dmap[major].dmap_rw)(task, &dev_mess);  /// dmap see table.c:115
 
   /* Task has completed.  See if call completed. */
   if (dev_mess.REP_STATUS == SUSPEND) {

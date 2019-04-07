@@ -197,7 +197,7 @@ register struct super_block *sp; /* pointer to a superblock */
   int version, native;
 
   dev = sp->s_dev;		/* save device (will be overwritten by copy) */
-  bp = get_block(sp->s_dev, SUPER_BLOCK, NORMAL);
+  bp = get_block(sp->s_dev, SUPER_BLOCK, NORMAL); /// get_block see cache.c:28
   memcpy( (char *) sp, bp->b_data, (size_t) SUPER_SIZE);
   put_block(bp, ZUPER_BLOCK);
   sp->s_dev = NO_DEV;		/* restore later */

@@ -37,7 +37,7 @@ PUBLIC void main()
   while (TRUE) {
 	/* Wait for message. */
 	get_work();		/* wait for an MM system call */
-	mp = &mproc[who];
+	mp = &mproc[who]; /// mp is the sender
 
   	/* Set some flags. */
 	error = OK;
@@ -48,7 +48,7 @@ PUBLIC void main()
 	if (mm_call < 0 || mm_call >= NCALLS)
 		error = EBADCALL;
 	else
-		error = (*call_vec[mm_call])();
+		error = (*call_vec[mm_call])(); /// call_vec see table.c:16
 
 	/* Send the results back to the user to indicate completion. */
 	if (dont_reply) continue;	/* no reply for EXIT and WAIT */

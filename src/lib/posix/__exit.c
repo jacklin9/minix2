@@ -8,5 +8,5 @@ int status;
   message m;
 
   m.m1_i1 = status;
-  _syscall(MM, EXIT, &m);
+  _syscall(MM, EXIT, &m); /// _syscall see other/syscall.c:3
 }
